@@ -127,8 +127,10 @@ bool RandomTransactionInserter::DoInsert(DB* db, Transaction* txn,
 
   std::vector<uint16_t> set_vec(num_sets_);
   std::iota(set_vec.begin(), set_vec.end(), static_cast<uint16_t>(0));
-  std::random_shuffle(set_vec.begin(), set_vec.end(),
-                      [&](uint64_t r) { return rand_->Uniform(r); });
+  std::random_device rd;
+  std::mt19937_64 g(rd());
+  std::shuffle(set_vec.begin(), set_vec.end(), g);
+
   // For each set, pick a key at random and increment it
   for (uint16_t set_i : set_vec) {
     uint64_t int_value = 0;
@@ -256,8 +258,9 @@ Status RandomTransactionInserter::Verify(DB* db, uint16_t num_sets,
   std::vector<uint16_t> set_vec(num_sets);
   std::iota(set_vec.begin(), set_vec.end(), static_cast<uint16_t>(0));
   if (rand) {
-    std::random_shuffle(set_vec.begin(), set_vec.end(),
-                        [&](uint64_t r) { return rand->Uniform(r); });
+    std::random_device rd;
+    std::mt19937_64 g(rd());
+    std::shuffle(set_vec.begin(), set_vec.end(), g);
   }
   // For each set of keys with the same prefix, sum all the values
   for (uint16_t set_i : set_vec) {
