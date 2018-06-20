@@ -3793,6 +3793,8 @@ GoogleTestFailureException::GoogleTestFailureException(
 
 #endif  // GTEST_HAS_EXCEPTIONS
 
+#ifdef ENABLE_GTEST
+
 // We put these helper functions in the internal namespace as IBM's xlC
 // compiler rejects the code if they were declared static.
 
@@ -3880,11 +3882,13 @@ Result HandleExceptionsInMethodIfSupported(
     return (object->*method)();
   }
 }
+#endif
 
 }  // namespace internal
 
 // Runs the test and updates the test result.
 void Test::Run() {
+#ifdef ENABLE_GTEST
   if (!HasSameFixtureClass()) return;
 
   internal::UnitTestImpl* const impl = internal::GetUnitTestImpl();
@@ -3903,6 +3907,7 @@ void Test::Run() {
   impl->os_stack_trace_getter()->UponLeavingGTest();
   internal::HandleExceptionsInMethodIfSupported(
       this, &Test::TearDown, "TearDown()");
+#endif
 }
 
 // Returns true iff the current test has a fatal failure.
@@ -4044,6 +4049,7 @@ void UnitTestImpl::RegisterParameterizedTests() {
 // Creates the test object, runs it, records its result, and then
 // deletes it.
 void TestInfo::Run() {
+#ifdef ENABLE_GTEST
   if (!should_run_) return;
 
   // Tells UnitTest where to store test result.
@@ -4085,6 +4091,7 @@ void TestInfo::Run() {
   // Tells UnitTest to stop associating assertion results to this
   // test.
   impl->set_current_test_info(NULL);
+#endif
 }
 
 // class TestCase
@@ -4173,6 +4180,7 @@ void TestCase::AddTestInfo(TestInfo * test_info) {
 
 // Runs every test in this TestCase.
 void TestCase::Run() {
+#ifdef ENABLE_GTEST
   if (!should_run_) return;
 
   internal::UnitTestImpl* const impl = internal::GetUnitTestImpl();
@@ -4197,6 +4205,7 @@ void TestCase::Run() {
 
   repeater->OnTestCaseEnd(*this);
   impl->set_current_test_case(NULL);
+#endif
 }
 
 // Clears the results of all tests in this test case.
@@ -5606,6 +5615,7 @@ void UnitTest::RecordProperty(const std::string& key,
 // We don't protect this under mutex_, as we only support calling it
 // from the main thread.
 int UnitTest::Run() {
+#ifdef ENABLE_GTEST
   const bool in_death_test_child_process =
       internal::GTEST_FLAG(internal_run_death_test).length() > 0;
 
@@ -5681,6 +5691,9 @@ int UnitTest::Run() {
       impl(),
       &internal::UnitTestImpl::RunAllTests,
       "auxiliary test code (environments or event listeners)") ? 0 : 1;
+#else
+    return 0;
+#endif
 }
 
 // Returns the working directory when the first TEST() or TEST_F() was
