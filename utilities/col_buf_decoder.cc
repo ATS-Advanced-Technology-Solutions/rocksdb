@@ -176,7 +176,7 @@ size_t LongFixedLengthColBufDecoder::Decode(const char* src, char** dest) {
 size_t VariableLengthColBufDecoder::Decode(const char* src, char** dest) {
   uint8_t len;
   len = *src;
-  memcpy(dest, reinterpret_cast<char*>(&len), 1);
+  memcpy(dest, src, 1);
   *dest += 1;
   src += 1;
   memcpy(*dest, src, len);
